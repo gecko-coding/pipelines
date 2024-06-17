@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "2gtesuJqOKJ3FwlerWR/2iyDtK8apDIXMWBQSzBM87Wi0YZW035DQs6rTRx/rXnoIXhE7fnvWLKGlrSMugOIgA==",
+  "success": true,
+  "projectFilePath": "/Users/dylan/dev/gecko-coding.github.com/pipelines/src/conpipe/conpipe.csproj",
+  "expectedPackageFiles": [
+    "/Users/dylan/.nuget/packages/system.io.pipelines/8.0.0/system.io.pipelines.8.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
