@@ -28,109 +28,36 @@ class Program
 
         Task? writing = null;
         
-        // Input is from a console
-        if (Console.IsInputRedirected == false)
-        {
-            Console.WriteLine("Read from console");
-            writing = FillPipeFromConsoleAsync(pipe.Writer);    
-        }
         
-        // Input is from a file
-        if (Console.IsInputRedirected == true)
-        {
-            Console.WriteLine("Read from redirected stdin");
-            var source = Console.OpenStandardInput();
-            writing = FillPipeAsync(source, pipe.Writer);    
-        }
+        Console.WriteLine("Read from redirected stdin");
+        var source = Console.OpenStandardInput();
+        writing = FillPipeAsync(source, pipe.Writer);    
         
         Task reading = ReadPipeAsync(pipe.Reader, destination);
 
         await Task.WhenAll(reading, writing!);
     }
     
-    static async Task ProcessLine(ReadOnlySequence<byte> line, Stream destination)
+    static async Task ProcessWord(ReadOnlySequence<byte> wordSequence, Stream destination)
     {
-        var segment = line.Start;
-        while (line.TryGet(ref segment, out var readOnlyMemory, advance: true))
+        var segment = wordSequence.Start;
+        while (wordSequence.TryGet(ref segment, out var readOnlyMemorySource, advance: true))
         {
-            await destination.WriteAsync(readOnlyMemory);
+            var word = Encoding.UTF8.GetString(readOnlyMemorySource.Span);
+            
+            // Transform
+            word = word.ToUpper();
+            
+            var readOnlyMemoryDestination = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(word));
+            
+            await destination.WriteAsync(readOnlyMemoryDestination);
         }
     }
 
-    static async Task ProcessLinesAsync(Stream source, Stream destination)
-    {
-        // Create schedulers
-        var writeScheduler = new SingleThreadPipeScheduler();
-        var readScheduler = new SingleThreadPipeScheduler();
-        
-        // The Pipe will start returning incomplete tasks from FlushAsync until
-        // the reader examines at least 5 bytes.
-        var options = new PipeOptions(pauseWriterThreshold: 10, resumeWriterThreshold: 5,readerScheduler: readScheduler,
-            writerScheduler: writeScheduler,
-            useSynchronizationContext: false);
-        var pipe = new Pipe(options);
-        
-        Task writing = FillPipeFromConsoleAsync(pipe.Writer);
-        Task reading = ReadPipeAsync(pipe.Reader, destination);
-
-        await Task.WhenAll(reading, writing);
-    }
-
-    static async Task FillPipeFromConsoleAsync(PipeWriter writer)
-    {
-        while (true)
-        {
-            try
-            {
-                if (Console.KeyAvailable == true)
-                {
-                    Memory<byte> memory = writer.GetMemory(1);
-                    var key = Console.ReadKey(false);
-                    
-                    var c = key.KeyChar;
-                    if (char.IsControl(c))
-                    {
-                        c = (char)key.Key;
-                        
-                        // Handle special characters ...
-                        if (key.Key == ConsoleKey.Backspace)
-                        {
-                            // Simulate backspace
-                            Console.SetCursorPosition(Console.GetCursorPosition().Left - 1, Console.GetCursorPosition().Top);
-                            Console.Write("\b \b");
-                        }
-                    }                   
-                    
-                    memory.Span[0] = (byte)c;
-                    
-                    // Tell the PipeWriter how much was read from the Socket.
-                    writer.Advance(1);
-                }
-                else
-                {
-                    await Task.Delay(10);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex);
-                break;
-            }
-
-            // Make the data available to the PipeReader.
-            FlushResult result = await writer.FlushAsync();
-
-            if (result.IsCompleted)
-            {
-                break;
-            }
-        }
-    }
-
+    
     static async Task FillPipeAsync(Stream source, PipeWriter writer)
     {
-        const int minimumBufferSize = 5;
+        const int minimumBufferSize = 512;
         
         while (true)
         {
@@ -176,7 +103,7 @@ class Program
             while (TryReadWord(ref buffer, out ReadOnlySequence<byte> line))
             {
                 // Process the line.
-                await ProcessLine(line, destination);
+                await ProcessWord(line, destination);
             }
 
             // Tell the PipeReader how much of the buffer has been consumed.
@@ -207,10 +134,10 @@ class Program
             word = default;
             return false;
         }
-        
+
         // Include the ' ' or \n
         position = buffer.GetPosition(1, position.Value);
-
+        
         // Capture the word
         word = buffer.Slice(0, position.Value);
         
