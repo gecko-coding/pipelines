@@ -7,8 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3026B7D9-3D0
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "capitalize", "src\capitalize\capitalize.csproj", "{4F46A542-8B8B-4EDD-8C69-BCEC42CAFEA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "conpipe", "src\conpipe\conpipe.csproj", "{F4F4920A-85D3-486D-B80D-8ACC7901D316}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,13 +20,8 @@ Global
 		{4F46A542-8B8B-4EDD-8C69-BCEC42CAFEA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F46A542-8B8B-4EDD-8C69-BCEC42CAFEA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F46A542-8B8B-4EDD-8C69-BCEC42CAFEA2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F4F4920A-85D3-486D-B80D-8ACC7901D316}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F4F4920A-85D3-486D-B80D-8ACC7901D316}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F4F4920A-85D3-486D-B80D-8ACC7901D316}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F4F4920A-85D3-486D-B80D-8ACC7901D316}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4F46A542-8B8B-4EDD-8C69-BCEC42CAFEA2} = {3026B7D9-3D0C-4526-B77B-86D339A1BE19}
-		{F4F4920A-85D3-486D-B80D-8ACC7901D316} = {3026B7D9-3D0C-4526-B77B-86D339A1BE19}
 	EndGlobalSection
 EndGlobal
