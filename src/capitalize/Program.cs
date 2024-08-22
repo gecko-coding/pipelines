@@ -10,10 +10,12 @@ class Program
     static async Task Main(string[] args)
     {
         var stdout = Console.OpenStandardOutput();
-        await ProcessInputAsync(stdout);
+        var stdin = Console.OpenStandardInput();
+        
+        await ProcessInputAsync(stdin, stdout);
     }
 
-    static async Task ProcessInputAsync(Stream destination)
+    static async Task ProcessInputAsync(Stream source, Stream destination)
     {
         // Create schedulers
         var writeScheduler = new SingleThreadPipeScheduler();
@@ -21,16 +23,17 @@ class Program
         
         // The Pipe will start returning incomplete tasks from FlushAsync until
         // the reader examines at least 5 bytes.
-        var options = new PipeOptions(pauseWriterThreshold: 10, resumeWriterThreshold: 5,readerScheduler: readScheduler,
+        var options = new PipeOptions(
+            pauseWriterThreshold: 10, 
+            resumeWriterThreshold: 5,
+            readerScheduler: readScheduler,
             writerScheduler: writeScheduler,
             useSynchronizationContext: false);
+        
         var pipe = new Pipe(options);
 
         Task? writing = null;
         
-        
-        Console.WriteLine("Read from redirected stdin");
-        var source = Console.OpenStandardInput();
         writing = FillPipeAsync(source, pipe.Writer);    
         
         Task reading = ReadPipeAsync(pipe.Reader, destination);
@@ -100,10 +103,10 @@ class Program
             ReadResult result = await reader.ReadAsync();
             ReadOnlySequence<byte> buffer = result.Buffer;
 
-            while (TryReadWord(ref buffer, out ReadOnlySequence<byte> line))
+            while (TryReadWord(ref buffer, out ReadOnlySequence<byte> word))
             {
                 // Process the line.
-                await ProcessWord(line, destination);
+                await ProcessWord(word, destination);
             }
 
             // Tell the PipeReader how much of the buffer has been consumed.
@@ -122,7 +125,7 @@ class Program
 
     static bool TryReadWord(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> word)
     {
-        // Look for a space or EOL in the buffer.
+        // Look for a space or line feed in the buffer.
         SequencePosition? position = buffer.PositionOf((byte)' ');
         if (position == null)
         {
